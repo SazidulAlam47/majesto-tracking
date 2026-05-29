@@ -17,6 +17,7 @@ export default function Header({ onMenuToggle }: HeaderProps) {
     // Derive page title from pathname
     const getPageTitle = () => {
         if (pathname === "/") return "Dashboard";
+        if (pathname.startsWith("/tasks/edit")) return "Edit Task";
 
         // Remove leading slash, replace hyphens with spaces, capitalize words
         return pathname
