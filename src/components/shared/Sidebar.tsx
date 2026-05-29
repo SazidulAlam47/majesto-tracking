@@ -144,7 +144,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                         <Button
                             variant="ghost"
                             onClick={logout}
-                            className="w-full justify-start rounded-xl border border-red-600 bg-white/5 px-3 text-slate-300 transition-all hover:border-indigo-500/25 hover:bg-red-500/10 hover:text-red-200"
+                            className="w-full justify-start rounded-xl border bg-white/5 px-3 text-slate-300 transition-all hover:bg-red-500/10 hover:text-red-200"
+                            style={{ borderColor: "rgb(51 65 85 / 0.8)" }}
                         >
                             <LogOut className="w-5 h-5 mr-3" />
                             Logout

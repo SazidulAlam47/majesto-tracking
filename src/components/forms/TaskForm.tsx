@@ -114,7 +114,7 @@ export function TaskForm() {
                 {/* Top gradient bar */}
                 <div className="h-2 w-full bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 -mt-4" />
 
-                <CardContent className="p-6 sm:p-8 space-y-8">
+                <CardContent className="p-6 sm:px-7 sm:py-3 space-y-8">
                     {/* Date Picker */}
                     <div className="space-y-3">
                         <Label className="text-sm font-semibold text-slate-600 uppercase tracking-wider flex items-center gap-2">
