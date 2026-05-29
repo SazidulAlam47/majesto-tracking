@@ -2,10 +2,9 @@
 
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { Menu, Bell } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Menu } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 
 interface HeaderProps {
     onMenuToggle: () => void;
@@ -52,16 +51,6 @@ export default function Header({ onMenuToggle }: HeaderProps) {
             </div>
 
             <div className="flex items-center gap-3 lg:gap-5">
-                {/* Mock Notifications */}
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    className="relative text-slate-500 hover:text-slate-700 rounded-full"
-                >
-                    <Bell className="h-5 w-5" />
-                    <span className="absolute top-2 right-2 w-2 h-2 bg-indigo-500 rounded-full border-2 border-white" />
-                </Button>
-
                 <div className="h-6 w-px bg-slate-200 hidden sm:block" />
 
                 <div className="flex items-center gap-3">
@@ -82,7 +71,7 @@ export default function Header({ onMenuToggle }: HeaderProps) {
                     </div>
 
                     <Avatar className="h-9 w-9 ring-2 ring-white shadow-sm">
-                        <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-xs font-medium">
+                        <AvatarFallback className="bg-linear-to-br from-indigo-500 to-purple-600 text-white text-xs font-medium">
                             {getInitials(userName || "User")}
                         </AvatarFallback>
                     </Avatar>
