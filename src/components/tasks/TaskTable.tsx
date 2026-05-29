@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import { toast } from "sonner";
 import { getTasks, deleteTask } from "@/services/taskService";
 import { useAuth } from "@/hooks/useAuth";
 import { ITask } from "@/types";
 import { formatDate } from "@/utils/helpers";
+import { PhotoProvider, PhotoView } from "react-photo-view";
 import {
     Loader2,
     ExternalLink,
@@ -91,7 +93,7 @@ export function TaskTable() {
                     <table className="w-full text-sm text-left">
                         <thead className="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-200">
                             <tr>
-                                <th className="px-6 py-4 font-medium w-40">
+                                <th className="px-6 py-4 font-medium w-48">
                                     <div className="flex items-center gap-2">
                                         <Calendar className="h-4 w-4" /> Date
                                     </div>
@@ -306,26 +308,31 @@ export function TaskTable() {
                     <DialogHeader>
                         <DialogTitle>Attached Assets</DialogTitle>
                     </DialogHeader>
-                    <div className="py-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
-                        {selectedImages?.map((url, i) => (
-                            <a
-                                key={i}
-                                href={url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="block group relative aspect-video rounded-lg overflow-hidden border border-slate-200"
-                            >
-                                <img
-                                    src={url}
-                                    alt={`Asset ${i + 1}`}
-                                    className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                                />
-                                <div className="absolute inset-0 bg-slate-900/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                    <ExternalLink className="h-6 w-6 text-white" />
-                                </div>
-                            </a>
-                        ))}
-                    </div>
+                    <PhotoProvider>
+                        <div className="py-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
+                            {selectedImages?.map((url, i) => (
+                                <PhotoView key={i} src={url}>
+                                    <button
+                                        type="button"
+                                        className="block group relative aspect-video w-full rounded-lg overflow-hidden border border-slate-200"
+                                        aria-label={`Open asset ${i + 1}`}
+                                    >
+                                        <Image
+                                            src={url}
+                                            alt={`Asset ${i + 1}`}
+                                            fill
+                                            unoptimized
+                                            sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
+                                            className="object-cover transition-transform group-hover:scale-105"
+                                        />
+                                        <div className="absolute inset-0 bg-slate-900/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                            <ExternalLink className="h-6 w-6 text-white" />
+                                        </div>
+                                    </button>
+                                </PhotoView>
+                            ))}
+                        </div>
+                    </PhotoProvider>
                 </DialogContent>
             </Dialog>
         </div>
