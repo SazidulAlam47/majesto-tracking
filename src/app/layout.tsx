@@ -6,39 +6,46 @@ import { Toaster } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+    variable: "--font-geist-sans",
+    subsets: ["latin"],
 });
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+    variable: "--font-geist-mono",
+    subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "Majesto Tracking",
-  description: "Intern task tracking dashboard for Majesto Limited",
+    title: "Majesto Tracking",
+    description: "Intern task tracking dashboard for Majesto Limited",
 };
 
 export default function RootLayout({
-  children,
+    children,
 }: Readonly<{
-  children: React.ReactNode;
+    children: React.ReactNode;
 }>) {
-  return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
-      suppressHydrationWarning
-    >
-      <body className="min-h-full flex flex-col bg-slate-950 text-slate-50" suppressHydrationWarning>
-        <AuthProvider>
-          <TooltipProvider>
-            {children}
-            <Toaster position="top-right" richColors theme="dark" />
-          </TooltipProvider>
-        </AuthProvider>
-      </body>
-    </html>
-  );
+    return (
+        <html
+            lang="en"
+            className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+            suppressHydrationWarning
+        >
+            <body
+                className="min-h-full flex flex-col bg-slate-50 text-slate-900"
+                suppressHydrationWarning
+            >
+                <AuthProvider>
+                    <TooltipProvider>
+                        {children}
+                        <Toaster
+                            position="top-right"
+                            richColors
+                            theme="light"
+                        />
+                    </TooltipProvider>
+                </AuthProvider>
+            </body>
+        </html>
+    );
 }
