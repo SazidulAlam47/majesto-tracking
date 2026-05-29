@@ -1,7 +1,7 @@
 // src/constants/index.ts
 
 export const APP_NAME = "Majesto Tracking";
-export const OWNER_NAME = "Sazidul ALam";
+export const OWNER_NAME = "Sazidul Alam";
 
 export const USER_STATUS = {
     PENDING: "pending",

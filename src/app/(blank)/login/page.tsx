@@ -18,6 +18,7 @@ import { generateSignature, safeStorage } from "@/utils/helpers";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { Loader2, Send, RefreshCw, CheckCircle, Clock } from "lucide-react";
+import { OWNER_NAME } from "@/constants";
 
 interface LoginRequest {
     name: string;
@@ -128,7 +129,7 @@ export default function LoginPage() {
                         Majesto Tracking
                     </CardTitle>
                     <CardDescription className="text-slate-500">
-                        Request access to track your daily tasks
+                        Request access to track {OWNER_NAME}'s daily tasks
                     </CardDescription>
                 </CardHeader>
 

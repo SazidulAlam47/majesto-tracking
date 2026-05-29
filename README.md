@@ -178,7 +178,3 @@ which sets default border color from the current theme token. This means compone
 - If borders appear the wrong color, check `:root` and `.dark` `--border` tokens in `src/app/globals.css`.
 - If uploads fail, confirm `NEXT_PUBLIC_CLOUD_NAME` and `NEXT_PUBLIC_UPLOAD_PRESET` and Cloudinary account settings.
 - If Mongo fails to connect, verify `NEXT_PUBLIC_DATABASE_URL` and that your IP/atlas rules allow connections.
-
-## License & Contact
-
-This repository is private to Majesto Limited. For questions contact the project maintainer.
