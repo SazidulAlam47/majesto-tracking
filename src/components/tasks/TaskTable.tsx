@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { getTasks, deleteTask } from "@/services/taskService";
 import { useAuth } from "@/hooks/useAuth";
@@ -12,6 +13,7 @@ import {
     Loader2,
     ExternalLink,
     Trash2,
+    PencilLine,
     Calendar,
     FileText,
     Image as ImageIcon,
@@ -35,22 +37,21 @@ export function TaskTable() {
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const { userType } = useAuth();
+    const router = useRouter();
 
     const [deleteId, setDeleteId] = useState<string | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
     const [selectedImages, setSelectedImages] = useState<string[] | null>(null);
 
     const fetchTasks = useCallback(async (pageNum: number) => {
-        setLoading(true);
         try {
             const res = await getTasks(pageNum, 10);
             if (res.success && res.data) {
                 setTasks(res.data);
-                // @ts-ignore - pagination exists in PaginatedResponse but types might be strict
                 setTotalPages(res.pagination?.totalPages || 1);
                 setPage(pageNum);
             }
-        } catch (error) {
+        } catch {
             toast.error("Failed to load tasks");
         } finally {
             setLoading(false);
@@ -58,7 +59,11 @@ export function TaskTable() {
     }, []);
 
     useEffect(() => {
-        fetchTasks(1);
+        const timeoutId = window.setTimeout(() => {
+            void fetchTasks(1);
+        }, 0);
+
+        return () => window.clearTimeout(timeoutId);
     }, [fetchTasks]);
 
     const handleDelete = async () => {
@@ -69,10 +74,17 @@ export function TaskTable() {
             if (res.success) {
                 toast.success("Task deleted successfully");
                 setDeleteId(null);
-                fetchTasks(page);
+                setLoading(true);
+                void fetchTasks(page);
             }
-        } catch (error: any) {
-            toast.error(error.response?.data?.error || "Failed to delete task");
+        } catch (error: unknown) {
+            const requestError = error as {
+                response?: { data?: { error?: string } };
+            };
+
+            toast.error(
+                requestError.response?.data?.error || "Failed to delete task",
+            );
         } finally {
             setIsDeleting(false);
         }
@@ -204,7 +216,7 @@ export function TaskTable() {
                                         <td className="px-6 py-4">
                                             {task.note ? (
                                                 <p className="text-slate-600 text-xs italic bg-slate-50 p-2 rounded-lg border border-slate-200 max-w-xs">
-                                                    "{task.note}"
+                                                    {task.note}
                                                 </p>
                                             ) : (
                                                 <span className="text-slate-400 text-xs">
@@ -214,16 +226,34 @@ export function TaskTable() {
                                         </td>
                                         {userType === "admin" && (
                                             <td className="px-6 py-4 text-right">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={() =>
-                                                        setDeleteId(task._id)
-                                                    }
-                                                    className="text-slate-500 hover:text-red-500 hover:bg-red-50"
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
+                                                <div className="flex items-center justify-end gap-1.5">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        onClick={() =>
+                                                            router.push(
+                                                                `/tasks/edit/${task._id}`,
+                                                            )
+                                                        }
+                                                        className="text-slate-500 hover:text-indigo-600 hover:bg-indigo-50"
+                                                        aria-label="Edit task"
+                                                    >
+                                                        <PencilLine className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        onClick={() =>
+                                                            setDeleteId(
+                                                                task._id,
+                                                            )
+                                                        }
+                                                        className="text-slate-500 hover:text-red-500 hover:bg-red-50"
+                                                        aria-label="Delete task"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
                                             </td>
                                         )}
                                     </tr>
@@ -240,7 +270,10 @@ export function TaskTable() {
                     <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => fetchTasks(page - 1)}
+                        onClick={() => {
+                            setLoading(true);
+                            void fetchTasks(page - 1);
+                        }}
                         disabled={page === 1 || loading}
                         className="border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
                     >
@@ -253,7 +286,10 @@ export function TaskTable() {
                     <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => fetchTasks(page + 1)}
+                        onClick={() => {
+                            setLoading(true);
+                            void fetchTasks(page + 1);
+                        }}
                         disabled={page === totalPages || loading}
                         className="border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
                     >

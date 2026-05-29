@@ -29,17 +29,32 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { ImageUploader } from "./ImageUploader";
-import { createTask } from "@/services/taskService";
+import { createTask, updateTask } from "@/services/taskService";
 import { CreateTaskInput } from "@/schemas/task";
+import type { ITask } from "@/types";
 
-export function TaskForm() {
+type TaskFormProps = {
+    initialTask?: ITask;
+    redirectTo?: string;
+};
+
+export function TaskForm({
+    initialTask,
+    redirectTo = "/tasks",
+}: TaskFormProps) {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
-    const [date, setDate] = useState<Date>(new Date());
-    const [tasks, setTasks] = useState<string[]>([""]);
-    const [note, setNote] = useState("");
-    const [driveLink, setDriveLink] = useState("");
-    const [images, setImages] = useState<string[]>([]);
+    const [date, setDate] = useState<Date>(
+        initialTask ? new Date(initialTask.date) : new Date(),
+    );
+    const [tasks, setTasks] = useState<string[]>(
+        initialTask?.tasks?.length ? initialTask.tasks : [""],
+    );
+    const [note, setNote] = useState(initialTask?.note ?? "");
+    const [driveLink, setDriveLink] = useState(initialTask?.driveLink ?? "");
+    const [images, setImages] = useState<string[]>(initialTask?.images ?? []);
+
+    const isEditMode = Boolean(initialTask);
 
     const handleTaskChange = (index: number, value: string) => {
         const newTasks = [...tasks];
@@ -89,16 +104,33 @@ export function TaskForm() {
         };
 
         try {
-            const res = await createTask(payload);
+            const res =
+                isEditMode && initialTask?._id
+                    ? await updateTask(initialTask._id, payload)
+                    : await createTask(payload);
+
             if (res.success) {
-                toast.success("Task created successfully");
-                router.push("/tasks");
+                toast.success(
+                    isEditMode
+                        ? "Task updated successfully"
+                        : "Task created successfully",
+                );
+                router.push(redirectTo);
             } else {
-                toast.error(res.error || "Failed to create task");
+                toast.error(
+                    res.error ||
+                        (isEditMode
+                            ? "Failed to update task"
+                            : "Failed to create task"),
+                );
             }
-        } catch (error: any) {
+        } catch (error: unknown) {
+            const requestError = error as {
+                response?: { data?: { error?: string } };
+            };
+
             toast.error(
-                error?.response?.data?.error || "Failed to create task",
+                requestError.response?.data?.error || "Failed to create task",
             );
         } finally {
             setLoading(false);
@@ -281,12 +313,14 @@ export function TaskForm() {
                     {loading ? (
                         <>
                             <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                            Saving Task...
+                            {isEditMode ? "Updating Task..." : "Saving Task..."}
                         </>
                     ) : (
                         <>
                             <Save className="mr-2 h-5 w-5" />
-                            Save Daily Task
+                            {isEditMode
+                                ? "Update Daily Task"
+                                : "Save Daily Task"}
                         </>
                     )}
                 </Button>
