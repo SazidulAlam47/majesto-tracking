@@ -1,5 +1,6 @@
 import { TaskTable } from "@/components/tasks/TaskTable";
 import { TaskTableWrapper } from "@/components/tasks/TaskTableWrapper";
+import { OWNER_NAME } from "@/constants";
 
 export default function TasksPage() {
     return (
@@ -12,7 +13,7 @@ export default function TasksPage() {
                         </h2>
                         <p className="text-slate-500 mt-1">
                             View all recorded tasks, progress, and uploaded
-                            assets.
+                            assets of {OWNER_NAME}.
                         </p>
                     </div>
                 </div>

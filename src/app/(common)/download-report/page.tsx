@@ -299,9 +299,7 @@ export default function DownloadReportPage() {
         } catch (error) {
             console.error(error);
             toast.dismiss(loadingToast);
-            toast.error(
-                "Failed to generate report. Check API keys or try again.",
-            );
+            toast.error("Failed to generate report. Please try again.");
         } finally {
             setGenerating(false);
         }
@@ -315,7 +313,7 @@ export default function DownloadReportPage() {
                 </h2>
                 <p className="text-slate-500 mt-1">
                     Generate a comprehensive PDF report of your internship tasks
-                    and progress.
+                    and progress of {OWNER_NAME}.
                 </p>
             </div>
 
