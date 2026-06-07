@@ -418,7 +418,7 @@ export default function DownloadReportPage() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             <div className="space-y-2">
                                 <Label className="text-slate-700">Month</Label>
-                                <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                                <Select value={selectedMonth} onValueChange={(val) => val !== null && setSelectedMonth(val)}>
                                     <SelectTrigger className="w-full bg-white border-slate-200 text-slate-900">
                                         <SelectValue placeholder="Select month">
                                             {selectedMonth ? MONTHS[parseInt(selectedMonth, 10)] : "Select month"}
@@ -433,7 +433,7 @@ export default function DownloadReportPage() {
                             </div>
                             <div className="space-y-2">
                                 <Label className="text-slate-700">Year</Label>
-                                <Select value={selectedYear} onValueChange={setSelectedYear}>
+                                <Select value={selectedYear} onValueChange={(val) => val !== null && setSelectedYear(val)}>
                                     <SelectTrigger className="w-full bg-white border-slate-200 text-slate-900">
                                         <SelectValue placeholder="Select year" />
                                     </SelectTrigger>
