@@ -62,7 +62,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
             {/* Sidebar Container */}
             <aside
-                className={`fixed top-0 left-0 z-50 h-screen w-70 flex flex-col overflow-hidden bg-slate-950/95 text-slate-100 border-r border-slate-800/70 shadow-[0_24px_80px_-24px_rgba(15,23,42,0.95)] backdrop-blur-xl transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static ${
+                className={`fixed top-0 left-0 z-50 h-screen w-70 flex flex-col overflow-hidden bg-slate-950/95 text-slate-100 border-r border-slate-800/70 shadow-none lg:shadow-[0_24px_80px_-24px_rgba(15,23,42,0.95)] backdrop-blur-xl transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static ${
                     isOpen ? "translate-x-0" : "-translate-x-full"
                 }`}
             >
