@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { format } from "date-fns";
+import { format, endOfDay } from "date-fns";
 import { getTasks } from "@/services/taskService";
 import { ITask } from "@/types";
 import {
@@ -59,7 +59,7 @@ export default function DownloadReportPage() {
                 1,
                 1000,
                 fromDate.toISOString(),
-                toDate.toISOString(),
+                endOfDay(toDate).toISOString(),
             );
             const tasks = res.data || [];
 
@@ -68,6 +68,29 @@ export default function DownloadReportPage() {
                 toast.info("No tasks found in the selected date range.");
                 setGenerating(false);
                 return;
+            }
+
+            // Pre-fetch images
+            const base64ImagesMap: Record<string, string[]> = {};
+            for (const t of tasks) {
+                if (t.images && t.images.length > 0) {
+                    base64ImagesMap[t._id] = [];
+                    for (const imgUrl of t.images) {
+                        try {
+                            const res = await fetch(imgUrl);
+                            const blob = await res.blob();
+                            const base64 = await new Promise<string>((resolve, reject) => {
+                                const reader = new FileReader();
+                                reader.onloadend = () => resolve(reader.result as string);
+                                reader.onerror = reject;
+                                reader.readAsDataURL(blob);
+                            });
+                            base64ImagesMap[t._id].push(base64);
+                        } catch (e) {
+                            console.error("Failed to load image for PDF", e);
+                        }
+                    }
+                }
             }
 
             // 2. Generate PDF
@@ -109,23 +132,19 @@ export default function DownloadReportPage() {
             doc.text("Detailed Task Log", 20, 80);
 
             const tableData = tasks.map((t: ITask) => {
-                const imageLinks = t.images && t.images.length > 0 ? t.images.map((img, i) => `Image ${i + 1}:\n${img}`).join("\n") : "-";
-                let links = "";
-                if (t.driveLink) links += `Drive: ${t.driveLink}\n`;
-                if (imageLinks !== "-") links += `Images:\n${imageLinks}`;
-                if (!links) links = "-";
-                
                 return [
                     format(new Date(t.date), "MMM dd, yyyy"),
                     t.tasks.map((task: string, i: number) => `${i + 1}. ${task}`).join("\n"),
                     t.note || "-",
-                    links.trim()
+                    "", // Drawn manually
+                    t.driveLink || "", // Index 4
+                    t._id // Index 5
                 ];
             });
 
             autoTable(doc, {
                 startY: 85,
-                head: [["Date", "Tasks", "Notes", "Links"]],
+                head: [["Date", "Tasks", "Notes", "Links/Images"]],
                 body: tableData,
                 theme: "striped",
                 headStyles: { fillColor: [79, 70, 229], textColor: [255, 255, 255], fontStyle: "bold" },
@@ -136,6 +155,66 @@ export default function DownloadReportPage() {
                     2: { cellWidth: 40 },
                     3: { cellWidth: 50 },
                 },
+                didParseCell: (data) => {
+                    if (data.column.index === 3 && data.section === "body") {
+                        const driveLink = data.row.raw[4] as string;
+                        const taskId = data.row.raw[5] as string;
+                        const images = base64ImagesMap[taskId] || [];
+                        
+                        let requiredHeight = 10;
+                        if (driveLink) {
+                            requiredHeight += 12; // Space for "Drive" text
+                        }
+                        if (images.length > 0) {
+                            const rowsOfImages = Math.ceil(images.length / 2);
+                            requiredHeight += rowsOfImages * 22; 
+                        }
+
+                        if (requiredHeight === 10) {
+                            data.cell.text = ["-"]; // Draw dash if nothing
+                        }
+
+                        if (data.cell.styles.minCellHeight < requiredHeight) {
+                            data.cell.styles.minCellHeight = requiredHeight;
+                        }
+                    }
+                },
+                didDrawCell: (data) => {
+                    if (data.column.index === 3 && data.section === "body") {
+                        const driveLink = data.row.raw[4] as string;
+                        const taskId = data.row.raw[5] as string;
+                        const images = base64ImagesMap[taskId] || [];
+                        
+                        let yPos = data.cell.y + 5;
+                        const xPos = data.cell.x + 5;
+
+                        if (driveLink) {
+                            doc.setFontSize(9);
+                            doc.setTextColor(37, 99, 235); // Blue-600
+                            doc.textWithLink("Drive", xPos, yPos + 4, { url: driveLink });
+                            
+                            const textWidth = doc.getTextWidth("Drive");
+                            doc.setDrawColor(37, 99, 235);
+                            doc.line(xPos, yPos + 5, xPos + textWidth, yPos + 5);
+                            
+                            yPos += 12;
+                            doc.setTextColor(15, 23, 42); // Reset text color
+                        }
+
+                        if (images.length > 0) {
+                            let imgX = xPos;
+                            let imgY = yPos;
+                            images.forEach((base64, i) => {
+                                if (i > 0 && i % 2 === 0) {
+                                    imgX = xPos;
+                                    imgY += 22;
+                                }
+                                doc.addImage(base64, imgX, imgY, 20, 20);
+                                imgX += 22;
+                            });
+                        }
+                    }
+                }
             });
 
             // Save PDF
