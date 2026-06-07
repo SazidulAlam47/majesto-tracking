@@ -60,19 +60,26 @@ export default function LoginPage() {
         setLoading(true);
         try {
             const signature = await generateSignature();
-            await requestLogin(name.trim(), signature);
+            const res = await requestLogin(name.trim(), signature);
 
-            const request: LoginRequest = {
-                name: name.trim(),
-                signature,
-                requestSent: true,
-            };
+            if (res.data?.status === "approved" && res.data?.token) {
+                login(res.data.token, "user");
+                safeStorage.removeItem("login_request");
+                toast.success("Access approved! Redirecting...");
+                router.push("/");
+            } else {
+                const request: LoginRequest = {
+                    name: name.trim(),
+                    signature,
+                    requestSent: true,
+                };
 
-            safeStorage.setItem("login_request", JSON.stringify(request));
-            setLoginRequest(request);
-            toast.success(
-                "Access request sent! Please wait for admin approval.",
-            );
+                safeStorage.setItem("login_request", JSON.stringify(request));
+                setLoginRequest(request);
+                toast.success(
+                    "Access request sent! Please wait for admin approval.",
+                );
+            }
         } catch (error: unknown) {
             const err = error as { response?: { data?: { error?: string } } };
             const msg = err.response?.data?.error || "Failed to send request";
@@ -190,7 +197,7 @@ export default function LoginPage() {
                                                 {loginRequest.name}
                                             </span>
                                             , your access request has been sent
-                                            to the admin. Please wait for
+                                            to {OWNER_NAME}. Please wait for
                                             approval.
                                         </p>
                                     </div>

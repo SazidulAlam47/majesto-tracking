@@ -11,7 +11,7 @@ export const adminLogin = async (email: string, password: string) => {
 };
 
 export const requestLogin = async (name: string, signature: string) => {
-  const res = await api.post<ApiResponse<{ user: IUser }>>(
+  const res = await api.post<ApiResponse<{ status: string; token?: string }>>(
     '/auth/request-login',
     { name, signature }
   );
