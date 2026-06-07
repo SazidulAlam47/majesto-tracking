@@ -87,14 +87,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [refreshAuth]
   );
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
+    if (userType === 'user') {
+      try {
+        const { default: api } = await import('@/services/api');
+        await api.delete('/users/me');
+      } catch (e) {
+        console.error("Failed to delete user on logout", e);
+      }
+    }
+
     clearAuth();
     setIsAuthenticated(false);
     setUserType(null);
     setUserName(null);
     setUserId(null);
     router.push('/login');
-  }, [router]);
+  }, [router, userType]);
 
   return {
     isAuthenticated,

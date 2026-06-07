@@ -8,7 +8,6 @@ import {
     deleteUser,
     approveUser,
     rejectUser,
-    revokeUserToken,
 } from "@/services/userService";
 import { IUser } from "@/types";
 import {
@@ -105,19 +104,7 @@ export function UserTable() {
         }
     };
 
-    const handleRevoke = async (id: string) => {
-        try {
-            const res = await revokeUserToken(id);
-            if (res.success) {
-                toast.success("Session revoked");
-                fetchUsers();
-            }
-        } catch (error: any) {
-            toast.error(
-                error.response?.data?.error || "Failed to revoke session",
-            );
-        }
-    };
+
 
     const handleUpdateName = async () => {
         if (!editUser || !editName.trim()) return;
@@ -350,22 +337,7 @@ export function UserTable() {
                                                         Edit Name
                                                     </DropdownMenuItem>
 
-                                                    {user.status ===
-                                                        "approved" &&
-                                                        user.type !==
-                                                            "admin" && (
-                                                            <DropdownMenuItem
-                                                                onClick={() =>
-                                                                    handleRevoke(
-                                                                        user._id,
-                                                                    )
-                                                                }
-                                                                className="focus:bg-slate-50 cursor-pointer"
-                                                            >
-                                                                <LogOut className="h-4 w-4 mr-2" />{" "}
-                                                                Revoke Session
-                                                            </DropdownMenuItem>
-                                                        )}
+
 
                                                     {user.type !== "admin" && (
                                                         <>
