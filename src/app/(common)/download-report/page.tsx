@@ -196,8 +196,9 @@ export default function DownloadReportPage() {
                 },
                 didParseCell: (data) => {
                     if (data.column.index === 3 && data.section === "body") {
-                        const driveLink = data.row.raw[4] as string;
-                        const taskId = data.row.raw[5] as string;
+                        const rowData = data.row.raw as string[];
+                        const driveLink = rowData[4];
+                        const taskId = rowData[5];
                         const images = base64ImagesMap[taskId] || [];
                         
                         let requiredHeight = 10;
@@ -220,8 +221,9 @@ export default function DownloadReportPage() {
                 },
                 didDrawCell: (data) => {
                     if (data.column.index === 3 && data.section === "body") {
-                        const driveLink = data.row.raw[4] as string;
-                        const taskId = data.row.raw[5] as string;
+                        const rowData = data.row.raw as string[];
+                        const driveLink = rowData[4];
+                        const taskId = rowData[5];
                         const images = base64ImagesMap[taskId] || [];
                         
                         let yPos = data.cell.y + 5;
