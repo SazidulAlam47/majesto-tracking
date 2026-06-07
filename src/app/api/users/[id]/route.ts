@@ -9,7 +9,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   try {
     await dbConnect();
 
-    const authResult = requireAdmin(request);
+    const authResult = await requireAdmin(request);
     if ('error' in authResult) return authResult.error;
 
     const { id } = await params;
@@ -61,7 +61,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
   try {
     await dbConnect();
 
-    const authResult = requireAdmin(request);
+    const authResult = await requireAdmin(request);
     if ('error' in authResult) return authResult.error;
 
     const { id } = await params;

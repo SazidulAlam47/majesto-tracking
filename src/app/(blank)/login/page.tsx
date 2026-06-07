@@ -178,15 +178,15 @@ export default function LoginPage() {
                             <div className="rounded-xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 p-5">
                                 <div className="flex items-start gap-3">
                                     <div className="mt-0.5">
-                                        <Clock className="h-5 w-5 text-amber-400" />
+                                        <Clock className="h-5 w-5 text-amber-600" />
                                     </div>
                                     <div>
-                                        <p className="font-medium text-amber-300 mb-1">
+                                        <p className="font-medium text-amber-700 mb-1">
                                             Request Pending
                                         </p>
-                                        <p className="text-sm text-slate-400">
+                                        <p className="text-sm text-slate-600">
                                             Hi{" "}
-                                            <span className="text-white font-medium">
+                                            <span className="text-slate-800 font-medium">
                                                 {loginRequest.name}
                                             </span>
                                             , your access request has been sent

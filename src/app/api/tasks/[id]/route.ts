@@ -12,7 +12,7 @@ export async function GET(
     try {
         await dbConnect();
 
-        const authResult = requireAdmin(request);
+        const authResult = await requireAdmin(request);
         if ("error" in authResult) return authResult.error;
 
         const { id } = await params;
@@ -48,7 +48,7 @@ export async function PUT(
     try {
         await dbConnect();
 
-        const authResult = requireAdmin(request);
+        const authResult = await requireAdmin(request);
         if ("error" in authResult) return authResult.error;
 
         const { id } = await params;
@@ -102,7 +102,7 @@ export async function DELETE(
     try {
         await dbConnect();
 
-        const authResult = requireAdmin(request);
+        const authResult = await requireAdmin(request);
         if ("error" in authResult) return authResult.error;
 
         const { id } = await params;

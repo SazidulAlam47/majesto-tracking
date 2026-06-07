@@ -10,7 +10,7 @@ export async function PUT(request: NextRequest) {
   try {
     await dbConnect();
 
-    const authResult = requireAdmin(request);
+    const authResult = await requireAdmin(request);
     if ('error' in authResult) return authResult.error;
 
     const body = await request.json();

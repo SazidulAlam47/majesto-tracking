@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
   try {
     await dbConnect();
 
-    const authResult = requireAuth(request);
+    const authResult = await requireAuth(request);
     if ('error' in authResult) return authResult.error;
 
     const searchParams = request.nextUrl.searchParams;
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
   try {
     await dbConnect();
 
-    const authResult = requireAdmin(request);
+    const authResult = await requireAdmin(request);
     if ('error' in authResult) return authResult.error;
 
     const body = await request.json();

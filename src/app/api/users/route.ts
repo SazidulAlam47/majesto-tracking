@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
   try {
     await dbConnect();
 
-    const authResult = requireAdmin(request);
+    const authResult = await requireAdmin(request);
     if ('error' in authResult) return authResult.error;
 
     const users = await User.find()
