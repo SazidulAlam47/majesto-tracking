@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { format, endOfDay } from "date-fns";
+import { format, endOfDay, startOfMonth, endOfMonth } from "date-fns";
 import { getTasks } from "@/services/taskService";
 import { ITask } from "@/types";
 import {
@@ -30,22 +30,61 @@ import { cn } from "@/lib/utils";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { Label } from "@/components/ui/label";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { OWNER_NAME } from "@/constants";
 
+const MONTHS = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+];
+
 export default function DownloadReportPage() {
+    type ReportType = "lifetime" | "monthly" | "range";
+    const [reportType, setReportType] = useState<ReportType>("lifetime");
+    const [selectedMonth, setSelectedMonth] = useState<string>(new Date().getMonth().toString());
+    const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
+
     const [fromDate, setFromDate] = useState<Date | undefined>();
     const [toDate, setToDate] = useState<Date | undefined>();
     const [generating, setGenerating] = useState(false);
 
     const handleGenerateReport = async () => {
-        if (!fromDate || !toDate) {
-            toast.error("Please select both from and to dates");
-            return;
-        }
+        let finalFromDate: Date | undefined;
+        let finalToDate: Date | undefined;
+        let titlePeriod = "Lifetime";
+        let fileNamePeriod = "Lifetime";
 
-        if (fromDate > toDate) {
-            toast.error("From date must be before To date");
-            return;
+        if (reportType === "range") {
+            if (!fromDate || !toDate) {
+                toast.error("Please select both from and to dates");
+                return;
+            }
+            if (fromDate > toDate) {
+                toast.error("From date must be before To date");
+                return;
+            }
+            finalFromDate = fromDate;
+            finalToDate = endOfDay(toDate);
+            titlePeriod = `Period: ${format(fromDate, "MMM dd, yyyy")} - ${format(toDate, "MMM dd, yyyy")}`;
+            fileNamePeriod = `${format(fromDate, "yyyy-MM-dd")}_to_${format(toDate, "yyyy-MM-dd")}`;
+        } else if (reportType === "monthly") {
+            const year = parseInt(selectedYear, 10);
+            const month = parseInt(selectedMonth, 10);
+            finalFromDate = startOfMonth(new Date(year, month));
+            finalToDate = endOfMonth(new Date(year, month));
+            titlePeriod = `Period: ${MONTHS[month]} ${year}`;
+            fileNamePeriod = `${MONTHS[month]}_${year}`;
+        } else if (reportType === "lifetime") {
+            finalFromDate = undefined;
+            finalToDate = undefined;
+            titlePeriod = "Period: Lifetime (All Data)";
+            fileNamePeriod = "Lifetime";
         }
 
         setGenerating(true);
@@ -58,8 +97,8 @@ export default function DownloadReportPage() {
             const res = await getTasks(
                 1,
                 1000,
-                fromDate.toISOString(),
-                endOfDay(toDate).toISOString(),
+                finalFromDate?.toISOString(),
+                finalToDate?.toISOString(),
             );
             const tasks = res.data || [];
 
@@ -111,7 +150,7 @@ export default function DownloadReportPage() {
             doc.setFontSize(12);
             doc.setTextColor(100, 116, 139); // Slate 500
             doc.text(
-                `Period: ${format(fromDate, "MMM dd, yyyy")} - ${format(toDate, "MMM dd, yyyy")}`,
+                titlePeriod,
                 pageWidth / 2,
                 40,
                 { align: "center" },
@@ -219,7 +258,7 @@ export default function DownloadReportPage() {
 
             // Save PDF
             doc.save(
-                `Majesto_Report_${format(fromDate, "yyyy-MM-dd")}_to_${format(toDate, "yyyy-MM-dd")}.pdf`,
+                `Majesto_Report_${fileNamePeriod}.pdf`,
             );
 
             toast.dismiss(loadingToast);
@@ -268,8 +307,36 @@ export default function DownloadReportPage() {
                 </CardHeader>
 
                 <CardContent className="space-y-8 relative z-10">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                        <div className="space-y-2">
+                    <div className="space-y-3">
+                        <Label className="text-slate-700 font-semibold">Report Type</Label>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <Button
+                                variant={reportType === "lifetime" ? "default" : "outline"}
+                                className={reportType === "lifetime" ? "bg-indigo-600 text-white hover:bg-indigo-700" : "bg-white"}
+                                onClick={() => setReportType("lifetime")}
+                            >
+                                Full Report (Lifetime)
+                            </Button>
+                            <Button
+                                variant={reportType === "monthly" ? "default" : "outline"}
+                                className={reportType === "monthly" ? "bg-indigo-600 text-white hover:bg-indigo-700" : "bg-white"}
+                                onClick={() => setReportType("monthly")}
+                            >
+                                Monthly
+                            </Button>
+                            <Button
+                                variant={reportType === "range" ? "default" : "outline"}
+                                className={reportType === "range" ? "bg-indigo-600 text-white hover:bg-indigo-700" : "bg-white"}
+                                onClick={() => setReportType("range")}
+                            >
+                                Custom Range
+                            </Button>
+                        </div>
+                    </div>
+
+                    {reportType === "range" && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <div className="space-y-2">
                             <Label className="text-slate-700">From Date</Label>
                             <Popover>
                                 <PopoverTrigger
@@ -299,6 +366,7 @@ export default function DownloadReportPage() {
                                         selected={fromDate}
                                         onSelect={setFromDate}
                                         autoFocus
+                                        disabled={{ after: new Date() }}
                                         className="bg-white text-slate-900 border-slate-200"
                                     />
                                 </PopoverContent>
@@ -335,12 +403,47 @@ export default function DownloadReportPage() {
                                         selected={toDate}
                                         onSelect={setToDate}
                                         autoFocus
+                                        disabled={{ after: new Date() }}
                                         className="bg-white text-slate-900 border-slate-200"
                                     />
                                 </PopoverContent>
                             </Popover>
                         </div>
                     </div>
+                    )}
+
+                    {reportType === "monthly" && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <Label className="text-slate-700">Month</Label>
+                                <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                                    <SelectTrigger className="w-full bg-white border-slate-200 text-slate-900">
+                                        <SelectValue placeholder="Select month">
+                                            {selectedMonth ? MONTHS[parseInt(selectedMonth, 10)] : "Select month"}
+                                        </SelectValue>
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-white border-slate-200 text-slate-900">
+                                        {MONTHS.map((m, i) => (
+                                            <SelectItem key={i} value={i.toString()}>{m}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="text-slate-700">Year</Label>
+                                <Select value={selectedYear} onValueChange={setSelectedYear}>
+                                    <SelectTrigger className="w-full bg-white border-slate-200 text-slate-900">
+                                        <SelectValue placeholder="Select year" />
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-white border-slate-200 text-slate-900">
+                                        {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - 5 + i).map(y => (
+                                            <SelectItem key={y} value={y.toString()}>{y}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                    )}
 
                     <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
                         <h4 className="text-sm font-semibold text-slate-700 flex items-center gap-2 mb-2">
