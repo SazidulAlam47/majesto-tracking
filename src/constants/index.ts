@@ -1,7 +1,7 @@
 // src/constants/index.ts
 
 export const APP_NAME = "Majesto Tracking";
-export const OWNER_NAME = "Sazidul Alam";
+export const OWNER_NAME = process.env.NEXT_PUBLIC_OWNER_NAME || "Sazidul Alam";
 
 export const USER_STATUS = {
     PENDING: "pending",

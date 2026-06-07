@@ -29,7 +29,6 @@ import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { Label } from "@/components/ui/label";
 
 export default function DownloadReportPage() {
@@ -50,7 +49,7 @@ export default function DownloadReportPage() {
 
         setGenerating(true);
         const loadingToast = toast.loading(
-            "Fetching data and generating AI report...",
+            "Fetching data and generating report...",
         );
 
         try {
@@ -70,27 +69,7 @@ export default function DownloadReportPage() {
                 return;
             }
 
-            // 2. Generate AI Summary using Gemini
-            const genAI = new GoogleGenerativeAI(
-                process.env.NEXT_PUBLIC_GEMINI_API_KEY || "",
-            );
-            const model = genAI.getGenerativeModel({
-                model: "gemini-1.5-flash",
-            });
-
-            const prompt = `Write a professional internship progress report for the intern at Majesto Limited. 
-Highlight achievements, skills demonstrated, and positive contributions based on the following tasks. 
-Make it glowing and professional. Format as a proper report with these EXACT sections (use these headers): 
-"Overview", "Key Achievements", "Skills Demonstrated", "Notable Work".
-Do not use markdown formatting like asterisks or hash symbols, just plain text with newlines separating sections.
-
-Task Data:
-${JSON.stringify(tasks.map((t: ITask) => ({ date: t.date, tasks: t.tasks, notes: t.note })))}`;
-
-            const aiResult = await model.generateContent(prompt);
-            const aiText = aiResult.response.text();
-
-            // 3. Generate PDF
+            // 2. Generate PDF
             const doc = new jsPDF();
             const pageWidth = doc.internal.pageSize.getWidth();
 
@@ -114,60 +93,47 @@ ${JSON.stringify(tasks.map((t: ITask) => ({ date: t.date, tasks: t.tasks, notes:
                 { align: "center" },
             );
 
-            doc.setDrawColor(226, 232, 240); // Slate 200
-            doc.line(20, 45, pageWidth - 20, 45);
-
-            // AI Summary Sections
+            // Summary Stats
             doc.setFontSize(11);
             doc.setTextColor(15, 23, 42); // Slate 900
+            const totalTasks = tasks.reduce((sum: number, t: ITask) => sum + t.tasks.length, 0);
+            doc.text(`Total working days: ${tasks.length}`, 20, 55);
+            doc.text(`Total tasks completed: ${totalTasks}`, 20, 62);
 
-            const sections = aiText
-                .split(
-                    /(?=Overview|Key Achievements|Skills Demonstrated|Notable Work)/i,
-                )
-                .filter((s) => s.trim());
+            doc.setDrawColor(226, 232, 240); // Slate 200
+            doc.line(20, 68, pageWidth - 20, 68);
 
-            let yPos = 55;
-
-            sections.forEach((section) => {
-                const lines = doc.splitTextToSize(
-                    section.trim(),
-                    pageWidth - 40,
-                );
-                // Check if we need a new page
-                if (yPos + lines.length * 5 > 280) {
-                    doc.addPage();
-                    yPos = 20;
-                }
-                doc.text(lines, 20, yPos);
-                yPos += lines.length * 5 + 10;
-            });
-
-            // Tasks Table
-            doc.addPage();
             doc.setFontSize(14);
             doc.setTextColor(30, 58, 138);
-            doc.text("Detailed Task Log", 20, 20);
+            doc.text("Detailed Task Log", 20, 80);
 
-            const tableData = tasks.map((t: ITask) => [
-                format(new Date(t.date), "MMM dd, yyyy"),
-                t.tasks.map((task, i) => `${i + 1}. ${task}`).join("\n"),
-                t.note || "-",
-                t.driveLink || "-",
-            ]);
+            const tableData = tasks.map((t: ITask) => {
+                const imageLinks = t.images && t.images.length > 0 ? t.images.map((img, i) => `Image ${i + 1}:\n${img}`).join("\n") : "-";
+                let links = "";
+                if (t.driveLink) links += `Drive: ${t.driveLink}\n`;
+                if (imageLinks !== "-") links += `Images:\n${imageLinks}`;
+                if (!links) links = "-";
+                
+                return [
+                    format(new Date(t.date), "MMM dd, yyyy"),
+                    t.tasks.map((task: string, i: number) => `${i + 1}. ${task}`).join("\n"),
+                    t.note || "-",
+                    links.trim()
+                ];
+            });
 
             autoTable(doc, {
-                startY: 30,
-                head: [["Date", "Tasks", "Notes", "Drive Link"]],
+                startY: 85,
+                head: [["Date", "Tasks", "Notes", "Links"]],
                 body: tableData,
                 theme: "striped",
-                headStyles: { fillColor: [79, 70, 229] }, // Indigo 600
-                styles: { fontSize: 9, cellPadding: 4 },
+                headStyles: { fillColor: [79, 70, 229], textColor: [255, 255, 255], fontStyle: "bold" },
+                styles: { fontSize: 9, cellPadding: 5, overflow: "linebreak" },
                 columnStyles: {
-                    0: { cellWidth: 30 },
-                    1: { cellWidth: 80 },
+                    0: { cellWidth: 25 },
+                    1: { cellWidth: 65 },
                     2: { cellWidth: 40 },
-                    3: { cellWidth: 40, overflow: "linebreak" },
+                    3: { cellWidth: 50 },
                 },
             });
 
@@ -193,11 +159,10 @@ ${JSON.stringify(tasks.map((t: ITask) => ({ date: t.date, tasks: t.tasks, notes:
         <div className="space-y-6 max-w-3xl mx-auto mt-8">
             <div>
                 <h2 className="text-2xl font-bold tracking-tight text-slate-900">
-                    Download AI Report
+                    Download Report
                 </h2>
                 <p className="text-slate-500 mt-1">
-                    Generate a comprehensive, AI-summarized PDF report of
-                    internship progress.
+                    Generate a comprehensive PDF report of your internship tasks and progress.
                 </p>
             </div>
 
@@ -303,13 +268,10 @@ ${JSON.stringify(tasks.map((t: ITask) => ({ date: t.date, tasks: t.tasks, notes:
                             What's included in the report?
                         </h4>
                         <ul className="text-sm text-slate-500 space-y-1 list-disc list-inside">
-                            <li>
-                                AI-generated professional summary of
-                                achievements
-                            </li>
-                            <li>Breakdown of skills demonstrated</li>
+                            <li>Summary of total days and tasks</li>
                             <li>Complete chronological log of all tasks</li>
-                            <li>Links to referenced Google Drive assets</li>
+                            <li>Included notes for each entry</li>
+                            <li>Links to referenced Google Drive assets and images</li>
                         </ul>
                     </div>
 

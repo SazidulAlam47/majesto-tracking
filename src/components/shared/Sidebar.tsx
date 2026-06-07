@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { ADMIN_NAV_ITEMS, USER_NAV_ITEMS, OWNER_NAME } from "@/constants";
+import { ADMIN_NAV_ITEMS, USER_NAV_ITEMS } from "@/constants";
 import {
     LayoutDashboard,
     ListTodo,
@@ -151,7 +151,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                             Logout
                         </Button>
                         <div className="mt-4 px-3 flex items-center justify-between text-[11px] text-slate-500">
-                            <span>© 2026 {OWNER_NAME}</span>
+                            <span>© 2026 Sazidul Alam</span>
                             <span>v0.1.0</span>
                         </div>
                     </div>
