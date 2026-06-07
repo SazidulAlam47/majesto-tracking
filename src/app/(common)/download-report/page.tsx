@@ -30,6 +30,7 @@ import { cn } from "@/lib/utils";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { Label } from "@/components/ui/label";
+import { OWNER_NAME } from "@/constants";
 
 export default function DownloadReportPage() {
     const [fromDate, setFromDate] = useState<Date | undefined>();
@@ -80,7 +81,7 @@ export default function DownloadReportPage() {
 
             doc.setFontSize(16);
             doc.setTextColor(71, 85, 105); // Slate 600
-            doc.text("Internship Progress Report", pageWidth / 2, 30, {
+            doc.text(`Internship Progress Report of ${OWNER_NAME}`, pageWidth / 2, 30, {
                 align: "center",
             });
 
