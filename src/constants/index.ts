@@ -26,7 +26,6 @@ export const PAGINATION = {
 } as const;
 
 export const ADMIN_NAV_ITEMS = [
-    { label: "Dashboard", href: "/", icon: "LayoutDashboard" },
     { label: "Tasks", href: "/tasks", icon: "ListTodo" },
     { label: "Add Task", href: "/add-task", icon: "PlusCircle" },
     { label: "Users", href: "/users", icon: "Users" },
@@ -36,7 +35,6 @@ export const ADMIN_NAV_ITEMS = [
 ] as const;
 
 export const USER_NAV_ITEMS = [
-    { label: "Dashboard", href: "/", icon: "LayoutDashboard" },
     { label: "Tasks", href: "/tasks", icon: "ListTodo" },
     { label: "Download Report", href: "/download-report", icon: "FileDown" },
     { label: "Profile", href: "/profile", icon: "UserCircle" },

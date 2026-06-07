@@ -43,7 +43,7 @@ export function proxy(request: NextRequest) {
   // Public routes — redirect authenticated users to dashboard
   if (publicRoutes.some((route) => pathname === route)) {
     if (token) {
-      return NextResponse.redirect(new URL('/', request.url));
+      return NextResponse.redirect(new URL('/tasks', request.url));
     }
     return NextResponse.next();
   }

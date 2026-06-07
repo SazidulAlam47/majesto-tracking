@@ -59,8 +59,3 @@ export interface DashboardStats {
   dailyTaskCounts: { date: string; count: number }[];
 }
 
-export interface GeminiInsight {
-  summary: string;
-  currentFocus: string;
-  insight: string;
-}
