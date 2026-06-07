@@ -40,15 +40,29 @@ import {
 import { OWNER_NAME } from "@/constants";
 
 const MONTHS = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
 ];
 
 export default function DownloadReportPage() {
     type ReportType = "lifetime" | "monthly" | "range";
     const [reportType, setReportType] = useState<ReportType>("lifetime");
-    const [selectedMonth, setSelectedMonth] = useState<string>(new Date().getMonth().toString());
-    const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
+    const [selectedMonth, setSelectedMonth] = useState<string>(
+        new Date().getMonth().toString(),
+    );
+    const [selectedYear, setSelectedYear] = useState<string>(
+        new Date().getFullYear().toString(),
+    );
 
     const [fromDate, setFromDate] = useState<Date | undefined>();
     const [toDate, setToDate] = useState<Date | undefined>();
@@ -118,12 +132,15 @@ export default function DownloadReportPage() {
                         try {
                             const res = await fetch(imgUrl);
                             const blob = await res.blob();
-                            const base64 = await new Promise<string>((resolve, reject) => {
-                                const reader = new FileReader();
-                                reader.onloadend = () => resolve(reader.result as string);
-                                reader.onerror = reject;
-                                reader.readAsDataURL(blob);
-                            });
+                            const base64 = await new Promise<string>(
+                                (resolve, reject) => {
+                                    const reader = new FileReader();
+                                    reader.onloadend = () =>
+                                        resolve(reader.result as string);
+                                    reader.onerror = reject;
+                                    reader.readAsDataURL(blob);
+                                },
+                            );
                             base64ImagesMap[t._id].push(base64);
                         } catch (e) {
                             console.error("Failed to load image for PDF", e);
@@ -143,23 +160,26 @@ export default function DownloadReportPage() {
 
             doc.setFontSize(16);
             doc.setTextColor(71, 85, 105); // Slate 600
-            doc.text(`Internship Progress Report of ${OWNER_NAME}`, pageWidth / 2, 30, {
-                align: "center",
-            });
+            doc.text(
+                `Internship Progress Report of ${OWNER_NAME}`,
+                pageWidth / 2,
+                30,
+                {
+                    align: "center",
+                },
+            );
 
             doc.setFontSize(12);
             doc.setTextColor(100, 116, 139); // Slate 500
-            doc.text(
-                titlePeriod,
-                pageWidth / 2,
-                40,
-                { align: "center" },
-            );
+            doc.text(titlePeriod, pageWidth / 2, 40, { align: "center" });
 
             // Summary Stats
             doc.setFontSize(11);
             doc.setTextColor(15, 23, 42); // Slate 900
-            const totalTasks = tasks.reduce((sum: number, t: ITask) => sum + t.tasks.length, 0);
+            const totalTasks = tasks.reduce(
+                (sum: number, t: ITask) => sum + t.tasks.length,
+                0,
+            );
             doc.text(`Total working days: ${tasks.length}`, 20, 55);
             doc.text(`Total tasks completed: ${totalTasks}`, 20, 62);
 
@@ -173,11 +193,13 @@ export default function DownloadReportPage() {
             const tableData = tasks.map((t: ITask) => {
                 return [
                     format(new Date(t.date), "MMM dd, yyyy"),
-                    t.tasks.map((task: string, i: number) => `${i + 1}. ${task}`).join("\n"),
+                    t.tasks
+                        .map((task: string, i: number) => `${i + 1}. ${task}`)
+                        .join("\n"),
                     t.note || "-",
                     "", // Drawn manually
                     t.driveLink || "", // Index 4
-                    t._id // Index 5
+                    t._id, // Index 5
                 ];
             });
 
@@ -186,7 +208,11 @@ export default function DownloadReportPage() {
                 head: [["Date", "Tasks", "Notes", "Links/Images"]],
                 body: tableData,
                 theme: "striped",
-                headStyles: { fillColor: [79, 70, 229], textColor: [255, 255, 255], fontStyle: "bold" },
+                headStyles: {
+                    fillColor: [79, 70, 229],
+                    textColor: [255, 255, 255],
+                    fontStyle: "bold",
+                },
                 styles: { fontSize: 9, cellPadding: 5, overflow: "linebreak" },
                 columnStyles: {
                     0: { cellWidth: 25 },
@@ -200,14 +226,14 @@ export default function DownloadReportPage() {
                         const driveLink = rowData[4];
                         const taskId = rowData[5];
                         const images = base64ImagesMap[taskId] || [];
-                        
+
                         let requiredHeight = 10;
                         if (driveLink) {
                             requiredHeight += 12; // Space for "Drive" text
                         }
                         if (images.length > 0) {
                             const rowsOfImages = Math.ceil(images.length / 2);
-                            requiredHeight += rowsOfImages * 22; 
+                            requiredHeight += rowsOfImages * 22;
                         }
 
                         if (requiredHeight === 10) {
@@ -225,19 +251,26 @@ export default function DownloadReportPage() {
                         const driveLink = rowData[4];
                         const taskId = rowData[5];
                         const images = base64ImagesMap[taskId] || [];
-                        
+
                         let yPos = data.cell.y + 5;
                         const xPos = data.cell.x + 5;
 
                         if (driveLink) {
                             doc.setFontSize(9);
                             doc.setTextColor(37, 99, 235); // Blue-600
-                            doc.textWithLink("Drive", xPos, yPos + 4, { url: driveLink });
-                            
+                            doc.textWithLink("Drive", xPos, yPos + 4, {
+                                url: driveLink,
+                            });
+
                             const textWidth = doc.getTextWidth("Drive");
                             doc.setDrawColor(37, 99, 235);
-                            doc.line(xPos, yPos + 5, xPos + textWidth, yPos + 5);
-                            
+                            doc.line(
+                                xPos,
+                                yPos + 5,
+                                xPos + textWidth,
+                                yPos + 5,
+                            );
+
                             yPos += 12;
                             doc.setTextColor(15, 23, 42); // Reset text color
                         }
@@ -255,13 +288,11 @@ export default function DownloadReportPage() {
                             });
                         }
                     }
-                }
+                },
             });
 
             // Save PDF
-            doc.save(
-                `Majesto_Report_${fileNamePeriod}.pdf`,
-            );
+            doc.save(`Majesto_Report_${fileNamePeriod}.pdf`);
 
             toast.dismiss(loadingToast);
             toast.success("Report generated successfully!");
@@ -283,7 +314,8 @@ export default function DownloadReportPage() {
                     Download Report
                 </h2>
                 <p className="text-slate-500 mt-1">
-                    Generate a comprehensive PDF report of your internship tasks and progress.
+                    Generate a comprehensive PDF report of your internship tasks
+                    and progress.
                 </p>
             </div>
 
@@ -310,25 +342,51 @@ export default function DownloadReportPage() {
 
                 <CardContent className="space-y-8 relative z-10">
                     <div className="space-y-3">
-                        <Label className="text-slate-700 font-semibold">Report Type</Label>
+                        <Label className="text-slate-700 font-semibold">
+                            Report Type
+                        </Label>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                             <Button
-                                variant={reportType === "lifetime" ? "default" : "outline"}
-                                className={reportType === "lifetime" ? "bg-indigo-600 text-white hover:bg-indigo-700" : "bg-white"}
+                                variant={
+                                    reportType === "lifetime"
+                                        ? "default"
+                                        : "outline"
+                                }
+                                className={
+                                    reportType === "lifetime"
+                                        ? "bg-indigo-600 text-white hover:bg-indigo-700"
+                                        : "bg-white"
+                                }
                                 onClick={() => setReportType("lifetime")}
                             >
                                 Full Report (Lifetime)
                             </Button>
                             <Button
-                                variant={reportType === "monthly" ? "default" : "outline"}
-                                className={reportType === "monthly" ? "bg-indigo-600 text-white hover:bg-indigo-700" : "bg-white"}
+                                variant={
+                                    reportType === "monthly"
+                                        ? "default"
+                                        : "outline"
+                                }
+                                className={
+                                    reportType === "monthly"
+                                        ? "bg-indigo-600 text-white hover:bg-indigo-700"
+                                        : "bg-white"
+                                }
                                 onClick={() => setReportType("monthly")}
                             >
                                 Monthly
                             </Button>
                             <Button
-                                variant={reportType === "range" ? "default" : "outline"}
-                                className={reportType === "range" ? "bg-indigo-600 text-white hover:bg-indigo-700" : "bg-white"}
+                                variant={
+                                    reportType === "range"
+                                        ? "default"
+                                        : "outline"
+                                }
+                                className={
+                                    reportType === "range"
+                                        ? "bg-indigo-600 text-white hover:bg-indigo-700"
+                                        : "bg-white"
+                                }
                                 onClick={() => setReportType("range")}
                             >
                                 Custom Range
@@ -339,107 +397,145 @@ export default function DownloadReportPage() {
                     {reportType === "range" && (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             <div className="space-y-2">
-                            <Label className="text-slate-700">From Date</Label>
-                            <Popover>
-                                <PopoverTrigger
-                                    render={
-                                        <Button
-                                            variant="outline"
-                                            className={cn(
-                                                "w-full justify-start text-left font-medium bg-white border-slate-200 hover:bg-slate-50 hover:text-slate-900",
-                                                !fromDate && "text-slate-500",
-                                            )}
-                                        >
-                                            <CalendarIcon className="mr-2 h-4 w-4 text-indigo-600" />
-                                            {fromDate ? (
-                                                format(fromDate, "PPP")
-                                            ) : (
-                                                <span>Pick start date</span>
-                                            )}
-                                        </Button>
-                                    }
-                                />
-                                <PopoverContent
-                                    className="w-auto p-0 bg-white border-slate-200"
-                                    align="start"
-                                >
-                                    <Calendar
-                                        mode="single"
-                                        selected={fromDate}
-                                        onSelect={setFromDate}
-                                        autoFocus
-                                        disabled={{ after: new Date() }}
-                                        className="bg-white text-slate-900 border-slate-200"
+                                <Label className="text-slate-700">
+                                    From Date
+                                </Label>
+                                <Popover>
+                                    <PopoverTrigger
+                                        render={
+                                            <Button
+                                                variant="outline"
+                                                className={cn(
+                                                    "w-full justify-start text-left font-medium bg-white border-slate-200 hover:bg-slate-50 hover:text-slate-900",
+                                                    !fromDate &&
+                                                        "text-slate-500",
+                                                )}
+                                            >
+                                                <CalendarIcon className="mr-2 h-4 w-4 text-indigo-600" />
+                                                {fromDate ? (
+                                                    format(fromDate, "PPP")
+                                                ) : (
+                                                    <span>Pick start date</span>
+                                                )}
+                                            </Button>
+                                        }
                                     />
-                                </PopoverContent>
-                            </Popover>
-                        </div>
+                                    <PopoverContent
+                                        className="w-auto p-0 bg-white border-slate-200"
+                                        align="start"
+                                    >
+                                        <Calendar
+                                            mode="single"
+                                            selected={fromDate}
+                                            onSelect={setFromDate}
+                                            autoFocus
+                                            disabled={{ after: new Date() }}
+                                            className="bg-white text-slate-900 border-slate-200"
+                                        />
+                                    </PopoverContent>
+                                </Popover>
+                            </div>
 
-                        <div className="space-y-2">
-                            <Label className="text-slate-700">To Date</Label>
-                            <Popover>
-                                <PopoverTrigger
-                                    render={
-                                        <Button
-                                            variant="outline"
-                                            className={cn(
-                                                "w-full justify-start text-left font-medium bg-white border-slate-200 hover:bg-slate-50 hover:text-slate-900",
-                                                !toDate && "text-slate-500",
-                                            )}
-                                        >
-                                            <CalendarIcon className="mr-2 h-4 w-4 text-indigo-600" />
-                                            {toDate ? (
-                                                format(toDate, "PPP")
-                                            ) : (
-                                                <span>Pick end date</span>
-                                            )}
-                                        </Button>
-                                    }
-                                />
-                                <PopoverContent
-                                    className="w-auto p-0 bg-white border-slate-200"
-                                    align="start"
-                                >
-                                    <Calendar
-                                        mode="single"
-                                        selected={toDate}
-                                        onSelect={setToDate}
-                                        autoFocus
-                                        disabled={{ after: new Date() }}
-                                        className="bg-white text-slate-900 border-slate-200"
+                            <div className="space-y-2">
+                                <Label className="text-slate-700">
+                                    To Date
+                                </Label>
+                                <Popover>
+                                    <PopoverTrigger
+                                        render={
+                                            <Button
+                                                variant="outline"
+                                                className={cn(
+                                                    "w-full justify-start text-left font-medium bg-white border-slate-200 hover:bg-slate-50 hover:text-slate-900",
+                                                    !toDate && "text-slate-500",
+                                                )}
+                                            >
+                                                <CalendarIcon className="mr-2 h-4 w-4 text-indigo-600" />
+                                                {toDate ? (
+                                                    format(toDate, "PPP")
+                                                ) : (
+                                                    <span>Pick end date</span>
+                                                )}
+                                            </Button>
+                                        }
                                     />
-                                </PopoverContent>
-                            </Popover>
+                                    <PopoverContent
+                                        className="w-auto p-0 bg-white border-slate-200"
+                                        align="start"
+                                    >
+                                        <Calendar
+                                            mode="single"
+                                            selected={toDate}
+                                            onSelect={setToDate}
+                                            autoFocus
+                                            disabled={{ after: new Date() }}
+                                            className="bg-white text-slate-900 border-slate-200"
+                                        />
+                                    </PopoverContent>
+                                </Popover>
+                            </div>
                         </div>
-                    </div>
                     )}
 
                     {reportType === "monthly" && (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             <div className="space-y-2">
                                 <Label className="text-slate-700">Month</Label>
-                                <Select value={selectedMonth} onValueChange={(val) => val !== null && setSelectedMonth(val)}>
+                                <Select
+                                    value={selectedMonth}
+                                    onValueChange={(val) =>
+                                        val !== null && setSelectedMonth(val)
+                                    }
+                                >
                                     <SelectTrigger className="w-full bg-white border-slate-200 text-slate-900">
                                         <SelectValue placeholder="Select month">
-                                            {selectedMonth ? MONTHS[parseInt(selectedMonth, 10)] : "Select month"}
+                                            {selectedMonth
+                                                ? MONTHS[
+                                                      parseInt(
+                                                          selectedMonth,
+                                                          10,
+                                                      )
+                                                  ]
+                                                : "Select month"}
                                         </SelectValue>
                                     </SelectTrigger>
                                     <SelectContent className="bg-white border-slate-200 text-slate-900">
                                         {MONTHS.map((m, i) => (
-                                            <SelectItem key={i} value={i.toString()}>{m}</SelectItem>
+                                            <SelectItem
+                                                key={i}
+                                                value={i.toString()}
+                                            >
+                                                {m}
+                                            </SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
                             </div>
                             <div className="space-y-2">
                                 <Label className="text-slate-700">Year</Label>
-                                <Select value={selectedYear} onValueChange={(val) => val !== null && setSelectedYear(val)}>
+                                <Select
+                                    value={selectedYear}
+                                    onValueChange={(val) =>
+                                        val !== null && setSelectedYear(val)
+                                    }
+                                >
                                     <SelectTrigger className="w-full bg-white border-slate-200 text-slate-900">
                                         <SelectValue placeholder="Select year" />
                                     </SelectTrigger>
                                     <SelectContent className="bg-white border-slate-200 text-slate-900">
-                                        {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - 5 + i).map(y => (
-                                            <SelectItem key={y} value={y.toString()}>{y}</SelectItem>
+                                        {Array.from(
+                                            { length: 10 },
+                                            (_, i) =>
+                                                new Date().getFullYear() -
+                                                5 +
+                                                i,
+                                        ).map((y) => (
+                                            <SelectItem
+                                                key={y}
+                                                value={y.toString()}
+                                            >
+                                                {y}
+                                            </SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
@@ -450,13 +546,16 @@ export default function DownloadReportPage() {
                     <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
                         <h4 className="text-sm font-semibold text-slate-700 flex items-center gap-2 mb-2">
                             <FileText className="h-4 w-4 text-indigo-600" />{" "}
-                            What's included in the report?
+                            What&apos;s included in the report?
                         </h4>
                         <ul className="text-sm text-slate-500 space-y-1 list-disc list-inside">
                             <li>Summary of total days and tasks</li>
                             <li>Complete chronological log of all tasks</li>
                             <li>Included notes for each entry</li>
-                            <li>Links to referenced Google Drive assets and images</li>
+                            <li>
+                                Links to referenced Google Drive assets and
+                                images
+                            </li>
                         </ul>
                     </div>
 
